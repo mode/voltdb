@@ -255,13 +255,12 @@ VoltDBEngine::initialize(int32_t clusterIndex,
                                             m_drReplicatedStream,
                                             drClusterId);
     // Add the engine to the global list tracking replicated tables
-    SynchronizedThreadLock::lockReplicatedResourceNoThreadLocals();
+    ScopedReplicatedResourceLock scopedLock;
     ThreadLocalPool::setPartitionIds(m_partitionId);
     VOLT_DEBUG("Initializing partition %d (tid %ld) with context %p", m_partitionId,
             SynchronizedThreadLock::getThreadId(), m_executorContext);
     EngineLocals newLocals = EngineLocals(ExecutorContext::getExecutorContext());
     SynchronizedThreadLock::init(sitesPerHost, newLocals);
-    SynchronizedThreadLock::unlockReplicatedResource();
 }
 
 VoltDBEngine::~VoltDBEngine() {
@@ -308,10 +307,9 @@ VoltDBEngine::~VoltDBEngine() {
 
             if (deleteWithMpPool) {
                 if (m_isLowestSite) {
-                    SynchronizedThreadLock::lockReplicatedResource();
+                    ScopedReplicatedResourceLock scopedLock;
                     ExecuteWithMpMemory usingMpMemory;
                     delete eraseThis->second;
-                    SynchronizedThreadLock::unlockReplicatedResource();
                 }
             }
             else {

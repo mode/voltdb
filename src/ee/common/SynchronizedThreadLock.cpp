@@ -15,6 +15,9 @@
  * along with VoltDB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <execinfo.h>
+#include <stdlib.h>
+
 #include "SynchronizedThreadLock.h"
 
 #include "common/debuglog.h"
@@ -120,7 +123,7 @@ void SynchronizedThreadLock::init(int32_t sitesPerHost, EngineLocals& newEngineL
 }
 
 void SynchronizedThreadLock::resetMemory(int32_t partitionId) {
-    lockReplicatedResourceNoThreadLocals();
+    lockReplicatedResource();
     if (partitionId == s_mpMemoryPartitionId) {
         // This is being called twice. First when the lowestSite goes away and then
         // when the MP Sites Engine goes away but we use the first opportunity to
@@ -182,7 +185,7 @@ void SynchronizedThreadLock::resetMemory(int32_t partitionId) {
             s_SITES_PER_HOST = 0;
         }
     }
-    unlockReplicatedResourceNoThreadLocals();
+    unlockReplicatedResource();
 }
 
 bool SynchronizedThreadLock::countDownGlobalTxnStartCount(bool lowestSite) {
@@ -252,23 +255,19 @@ void SynchronizedThreadLock::addUndoAction(bool synchronized, UndoQuantum *uq, U
     }
 }
 
-// Special call for before we initialize ThreadLocalPool partitionIds
-void SynchronizedThreadLock::lockReplicatedResourceNoThreadLocals() {
-    pthread_mutex_lock(&s_sharedEngineMutex);
-}
-
-void SynchronizedThreadLock::unlockReplicatedResourceNoThreadLocals() {
-    pthread_mutex_unlock(&s_sharedEngineMutex);
-}
-
 void SynchronizedThreadLock::lockReplicatedResource() {
-    pthread_mutex_lock(&s_sharedEngineMutex);
-    // Can't use threadlocals because this is called before we assign the partitionIds to threadlocals
-    VOLT_DEBUG("Grabbing replicated resource lock on engine %d", ThreadLocalPool::getThreadPartitionId());
+    // We don't expect to be single-threaded here, since we would be
+    // calling the countdown latch instead.
+    // This method is for locking write-access to replicated resources in
+    // multi-threaded execution.
     assert(!s_inSingleThreadMode);
+    VOLT_DEBUG("Attempting to acquire replicated resource lock on engine %d...", ThreadLocalPool::getThreadPartitionId());
+    pthread_mutex_lock(&s_sharedEngineMutex);
 #ifndef  NDEBUG
+    assert(! s_holdingReplicatedTableLock);
     s_holdingReplicatedTableLock = true;
 #endif
+    VOLT_DEBUG("Acquired replicated resource lock on engine %d.", ThreadLocalPool::getThreadPartitionId());
 }
 
 void SynchronizedThreadLock::unlockReplicatedResource() {
@@ -285,6 +284,7 @@ bool SynchronizedThreadLock::usingMpMemory() {
 }
 
 void SynchronizedThreadLock::setUsingMpMemory(bool isUsingMpMemory) {
+    assert(SynchronizedThreadLock::isInSingleThreadMode() || SynchronizedThreadLock::isHoldingResourceLock());
     s_usingMpMemory = isUsingMpMemory;
 }
 #endif
@@ -307,7 +307,17 @@ void SynchronizedThreadLock::assumeMpMemoryContext() {
     // We should either be running on the lowest site thread (in the lowest site context) or
     // or be holding the replicated resource lock (Note: This could be a false positive if
     // a different thread happens to have the Replicated Resource Lock)
-    assert(s_inSingleThreadMode || s_holdingReplicatedTableLock);
+    bool someAsserts = (s_inSingleThreadMode || s_holdingReplicatedTableLock);
+    if (! someAsserts) {
+        void* callstack[256];
+        int i, frames = backtrace(callstack, 128);
+        char** strs = backtrace_symbols(callstack, frames);
+        for (i = 0; i < frames; ++i) {
+            printf("%s\n", strs[i]);
+        }
+        free(strs);
+        assert(s_inSingleThreadMode || s_holdingReplicatedTableLock);
+    }
     ExecutorContext::assignThreadLocals(s_mpEngine);
 #ifndef  NDEBUG
     setUsingMpMemory(true);

@@ -70,6 +70,7 @@ class SynchronizedThreadLock {
 
     friend class ExecuteWithAllSitesMemory;
     friend class ReplicatedMaterializedViewHandler;
+    friend class ScopedReplicatedResourceLock;
     friend class ::DRBinaryLogTest;
 
 public:
@@ -83,11 +84,6 @@ public:
      */
     static bool countDownGlobalTxnStartCount(bool lowestSite);
     static void signalLowestSiteFinished();
-
-    static void lockReplicatedResourceNoThreadLocals();
-    static void unlockReplicatedResourceNoThreadLocals();
-    static void lockReplicatedResource();
-    static void unlockReplicatedResource();
 
     static void addUndoAction(bool synchronized, UndoQuantum *uq, UndoReleaseAction* action,
             PersistentTable *interest = NULL);
@@ -115,6 +111,12 @@ public:
     static EngineLocals getMpEngine();
 
 private:
+
+    // For use only by friends:
+    static void lockReplicatedResource();
+    static void unlockReplicatedResource();
+
+
     static bool s_inSingleThreadMode;
 #ifndef  NDEBUG
     static bool s_usingMpMemory;
