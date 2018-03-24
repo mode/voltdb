@@ -12,7 +12,7 @@ help() {
   echo '  UDFs, e.g., by sqlcmd test.'
   echo '  Use BUILD for the build type. The default build type is release.'
 }
-
+set -x
 # set the build type
 BUILD=release
 while [ -n "$1" ] ; do

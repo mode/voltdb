@@ -291,10 +291,10 @@ function test-tools-server-pro() {
 
 # Start the VoltDB server ('community'), only if not already running
 function test-tools-server-if-needed() {
-    if [[ -z "$(ps -ef | grep -i voltdb | grep -v SQLCommand | grep -v 'grep -i voltdb')" ]]; then
+    if ! sqlcmd < /dev/null &> /dev/null; then
         test-tools-server
     else
-        echo -e "\nNot (re-)starting a VoltDB server, because 'ps -ef' now includes a 'voltdb' process."
+        echo -e "\nNot (re-)starting a VoltDB server, because sqlcmd can connect to one."
         #echo -e "    DEBUG:" $(ps -ef | grep -i voltdb | grep -v SQLCommand | grep -v "grep -i voltdb")
     fi
 }

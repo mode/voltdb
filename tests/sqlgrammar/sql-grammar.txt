@@ -493,6 +493,7 @@ basic-delete-statement  ::= DELETE FROM {table-name} [{where-clause}] [{sort-cla
 
 truncate-statement      ::= TRUNCATE TABLE {table-name}
 
+null-truncate-statement          ::= SELECT COUNT(*) FROM {table-name}
 ################################################################################
 # Grammar rules for a Common Table Expression (CTE) statement, i.e. using a
 # WITH clause, with or without RECURSIVE:

@@ -845,8 +845,21 @@ def print_sql_statement(sql, num_chars_in_sql_type=6):
         print >> echo_output_file, "{0:27s}: {1:s}".format('Final sql', sql)
 
 
-def generate_sql_statements(sql_statement_type, num_sql_statements=0, max_save_statements=1000,
-                            delete_statement_type='truncate-statement', delete_statement_number=10):
+def roll_file_name(filename, number_rolled_files):
+    if number_rolled_files:
+        for i in xrange(1000):
+            suffstr = ("%03d" % i)
+            new_name = add_suffix_to_file_name(filename, suffstr)
+            if not (os.path.exists(new_name) and os.path.isfile(new_name)):
+                os.rename(filename, new_name)
+                return
+
+def generate_sql_statements(sql_statement_type, 
+			    num_sql_statements=0, 
+			    number_rolled_files=None,
+			    max_save_statements=1000,
+                            delete_statement_type='truncate-statement', 
+			    delete_statement_number=10):
     """Generate and print the specified number of SQL statements (num_sql_statements),
     of the specified type (sql_statement_type); the output file(s) should contain
     a maximum of the specified number of SQL statements (max_save_statements), meaning
@@ -876,6 +889,7 @@ def generate_sql_statements(sql_statement_type, num_sql_statements=0, max_save_s
             if sql_output_file and sql_output_file is not sys.stdout:
                 filename = sql_output_file.name
                 sql_output_file.close()
+                roll_file_name(filename, number_rolled_files)
                 sql_output_file = open(filename, 'w', 0)
             if sqlcmd_output_file and sqlcmd_output_file is not sys.stdout:
                 filename = sqlcmd_output_file.name
@@ -976,6 +990,8 @@ if __name__ == "__main__":
                          + "the actual sqlcmd output file will be named 'sqlcmd123.out' [default: None]")
     parser.add_option("-D", "--debug", dest="debug", default=2,
                       help="print debug info: 0 for none, increasing values (1-8) for more [default: 2]")
+    parser.add_option("--roll-commands", dest='number_rolled_files', default=None,
+                      help="The number of files of sql output to keep.")
     (options, args) = parser.parse_args()
 
     # The default 'number' depends on whether 'minutes' is zero or not
@@ -1000,6 +1016,7 @@ if __name__ == "__main__":
         print "DEBUG: options.delete_number :", options.delete_number
         print "DEBUG: options.max_save      :", options.max_save
         print "DEBUG: options.sql_output    :", options.sql_output
+        print "DEBUG: options.number_rolled_files ", options.number_rolled_files
         print "DEBUG: options.sqlcmd_output :", options.sqlcmd_output
         print "DEBUG: options.sqlcmd_summary:", options.sqlcmd_summary
         print "DEBUG: options.summary_number:", options.summary_number
@@ -1139,9 +1156,14 @@ if __name__ == "__main__":
     count_sql_statements = {}
     if options.initial_number:
         for sql_statement_type in options.initial_type.split(','):
-            generate_sql_statements(sql_statement_type, int(options.initial_number))
+            generate_sql_statements(sql_statement_type, 
+				    int(options.initial_number),
+				    options.number_rolled_files)
     for sql_statement_type in options.type.split(','):
-        generate_sql_statements(sql_statement_type, int(options.number), int(options.max_save),
+        generate_sql_statements(sql_statement_type, 
+				int(options.number), 
+				options.number_rolled_files,
+				int(options.max_save),
                                 options.delete_type, options.delete_number)
 
     if debug > 5:

@@ -680,11 +680,18 @@ template<> NValue NValue::call<FUNC_VOLT_DWITHIN_POLYGON_POINT>(const std::vecto
 template<> NValue NValue::call<FUNC_VOLT_DWITHIN_POINT_POINT>(const std::vector<NValue>& arguments) {
     assert(arguments[0].getValueType() == VALUE_TYPE_POINT);
     assert(arguments[1].getValueType() == VALUE_TYPE_POINT);
-    assert(isNumeric(arguments[2].getValueType()));
 
     if (arguments[0].isNull() || arguments[1].isNull() || arguments[2].isNull()) {
         return NValue::getNullValue(VALUE_TYPE_BOOLEAN);
     }
+
+    if (! isNumeric(arguments[2].getValueType())) {
+        std::cout << "Non-numeric type : "
+                  << arguments[2].getValueType()
+                  << std::endl;
+        PRINT_STACK_TRACE();
+    }
+    // assert(isNumeric(arguments[2].getValueType()));
 
     double withinDistanceOf = arguments[2].castAsDoubleAndGetValue();
     if (withinDistanceOf < 0) {

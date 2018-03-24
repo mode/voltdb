@@ -1076,7 +1076,7 @@ template<> inline NValue NValue::callConstant<FUNC_VOLT_MAX_VALID_TIMESTAMP>() {
 
 template<> inline NValue NValue::callUnary<FUNC_VOLT_IS_VALID_TIMESTAMP>() const {
     if (isNull()) {
-        return getNullValue();
+        return getNullValue(VALUE_TYPE_BOOLEAN);
     }
     int64_t timestamp_number = castAsBigIntAndGetValue();
     return getBooleanValue(timestampIsValid(timestamp_number));

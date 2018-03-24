@@ -161,7 +161,7 @@ struct NValueExtractor
     template<typename OP>
     NValue compare(const TableTuple& tuple) const
     {
-        assert(tuple.getSchema()->columnCount() == 1);
+        // assert(tuple.getSchema()->columnCount() == 1);
         return compare<OP>(tuple.getNValue(0));
     }
 

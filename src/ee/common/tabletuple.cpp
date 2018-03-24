@@ -105,7 +105,7 @@ std::string TableTuple::debug(const std::string& tableName,
 
 std::string TableTuple::debugNoHeader() const {
     assert(m_schema);
-    assert(m_data);
+    // assert(m_data);
     return debug("");
 }
 

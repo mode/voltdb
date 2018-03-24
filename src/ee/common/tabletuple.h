@@ -608,7 +608,10 @@ private:
      * The column data, padded at the front by 8 bytes
      * representing whether the tuple is active or deleted
      */
+public:
+    // Opening this up to debug ENG-13725.
     char *m_data;
+private:
 
     inline char* getWritableDataPtr(const TupleSchema::ColumnInfo * colInfo) const {
         assert(m_schema);

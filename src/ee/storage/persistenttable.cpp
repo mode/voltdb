@@ -344,7 +344,12 @@ void PersistentTable::deleteAllTuples(bool, bool fallible) {
     TableIterator ti(this, m_data.begin());
     TableTuple tuple(m_schema);
     while (ti.next(tuple)) {
-        deleteTuple(tuple, fallible);
+        if (!tuple.m_data) {
+            std::cout << "Tuple with no data!!\n";
+            PRINT_STACK_TRACE();
+        } else {
+            deleteTuple(tuple, fallible);
+        }
     }
 }
 
@@ -1232,19 +1237,21 @@ void PersistentTable::deleteTuple(TableTuple& target, bool fallible) {
     // be left forgotten in case this throws.
     ExecutorContext* ec = ExecutorContext::getExecutorContext();
     AbstractDRTupleStream* drStream = getDRTupleStream(ec);
+    assert(target.m_data);
     if (doDRActions(drStream)) {
         int64_t lastCommittedSpHandle = ec->lastCommittedSpHandle();
         int64_t currentSpHandle = ec->currentSpHandle();
         int64_t currentUniqueId = ec->currentUniqueId();
         size_t drMark = drStream->appendTuple(lastCommittedSpHandle, m_signature, m_partitionColumn, currentSpHandle,
                                               currentUniqueId, target, DR_RECORD_DELETE);
-
+        assert(target.m_data);
         if (createUndoAction) {
             uq->registerUndoAction(new (*uq) DRTupleStreamUndoAction(drStream, drMark, rowCostForDRRecord(DR_RECORD_DELETE)));
         }
     }
 
     // Just like insert, we want to remove this tuple from all of our indexes
+    assert(target.m_data);
     deleteFromAllIndexes(&target);
 
     if (createUndoAction) {
@@ -1446,6 +1453,19 @@ void PersistentTable::insertIntoAllIndexes(TableTuple* tuple) {
 void PersistentTable::deleteFromAllIndexes(TableTuple* tuple) {
     BOOST_FOREACH (auto index, m_indexes) {
         if (!index->deleteEntry(tuple)) {
+            PRINT_STACK_TRACE();
+            std::cout << "Fatal error deleting tuple: "
+                      << std::endl
+                      << "  from table: "
+                      << m_name
+                      << ": "
+                      << debug()
+                      << std::endl
+                      << "  from index: "
+                      << index->getName()
+                      << ": "
+                      << index->debug()
+                      << std::endl;
             throwFatalException(
                     "Failed to delete tuple in Table: %s Index %s",
                     m_name.c_str(), index->getName().c_str());

@@ -1041,11 +1041,25 @@ private:
     }
 
     const bool& getBoolean() const {
+        if (getValueType() != VALUE_TYPE_BOOLEAN) {
+            std::cerr << "getValueType is "
+                      << getValueType()
+                      << " not VALUE_TYPE_BOOLEAN == "
+                      << VALUE_TYPE_BOOLEAN
+                      << std::endl;
+        }
         assert(getValueType() == VALUE_TYPE_BOOLEAN);
         return *reinterpret_cast<const bool*>(m_data);
     }
 
     bool& getBoolean() {
+        if (getValueType() != VALUE_TYPE_BOOLEAN) {
+            std::cerr << "getValueType is "
+                      << getValueType()
+                      << " not VALUE_TYPE_BOOLEAN == "
+                      << VALUE_TYPE_BOOLEAN
+                      << std::endl;
+        }
         assert(getValueType() == VALUE_TYPE_BOOLEAN);
         return *reinterpret_cast<bool*>(m_data);
     }
@@ -2607,7 +2621,7 @@ inline bool NValue::isFalse() const {
 }
 
 inline bool NValue::isBooleanNULL() const {
-    assert(getValueType() == VALUE_TYPE_BOOLEAN);
+    assert(getValueType() == VALUE_TYPE_BOOLEAN || getValueType() == VALUE_TYPE_NULL);
     return *reinterpret_cast<const int8_t*>(m_data) == INT8_NULL;
 }
 
