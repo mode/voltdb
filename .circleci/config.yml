@@ -21,6 +21,8 @@ jobs:
       - image: circleci/openjdk:8u232-jdk-stretch
     resource_class: xlarge
     steps:
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y ant build-essential cmake python git
       - checkout
       - attach_workspace:
           at: .
@@ -32,6 +34,8 @@ jobs:
       - image: circleci/openjdk:8u232-jdk-stretch
     resource_class: xlarge
     steps:
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y ant build-essential cmake python git
       - checkout
       - attach_workspace:
           at: .
@@ -43,6 +47,8 @@ jobs:
       - image: circleci/openjdk:8u232-jdk-stretch
     resource_class: xlarge
     steps:
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y ant build-essential cmake python git
       - checkout
       - attach_workspace:
           at: .
@@ -54,6 +60,8 @@ jobs:
       - image: circleci/openjdk:8u232-jdk-stretch
     resource_class: xlarge
     steps:
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y ant build-essential cmake python git
       - checkout
       - attach_workspace:
           at: .
@@ -65,6 +73,8 @@ jobs:
       - image: circleci/openjdk:8u232-jdk-stretch
     resource_class: xlarge
     steps:
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y ant build-essential cmake python git
       - checkout
       - attach_workspace:
           at: .
@@ -76,6 +86,8 @@ jobs:
       - image: circleci/openjdk:8u232-jdk-stretch
     resource_class: xlarge
     steps:
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y ant build-essential cmake python git
       - checkout
       - attach_workspace:
           at: .
@@ -87,6 +99,8 @@ jobs:
       - image: circleci/openjdk:8u232-jdk-stretch
     resource_class: xlarge
     steps:
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y ant build-essential cmake python git
       - checkout
       - attach_workspace:
           at: .
@@ -98,29 +112,29 @@ workflows:
   build_test_package:
     jobs:
       - build
-      #      - junit_regression_h1:
-      #          requires:
-      #            - build
-      #      - junit_regression_h2:
-      #          requires:
-      #            - build
-      #      - junit_other_p1:
-      #          requires:
-      #            - build
-      #      - junit_other_p2:
-      #          requires:
-      #            - build
-      #      - junit_other_p3:
-      #          requires:
-      #            - build
-      #      - junit_other_p4:
-      #          requires:
-      #            - build
-#      - package:
-#          requires:
-#            - junit_regression_h1
-#            - junit_regression_h2
-#            - junit_other_p1
-#            - junit_other_p2
-#            - junit_other_p3
-#            - junit_other_p4
+      - junit_regression_h1:
+          requires:
+            - build
+      - junit_regression_h2:
+          requires:
+            - build
+      - junit_other_p1:
+          requires:
+            - build
+      - junit_other_p2:
+          requires:
+            - build
+      - junit_other_p3:
+          requires:
+            - build
+      - junit_other_p4:
+          requires:
+            - build
+      - package:
+          requires:
+            - junit_regression_h1
+            - junit_regression_h2
+            - junit_other_p1
+            - junit_other_p2
+            - junit_other_p3
+            - junit_other_p4
