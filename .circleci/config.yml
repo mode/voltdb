@@ -7,7 +7,7 @@ jobs:
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
-      - run: sudo apt-get install -y cmake
+      - run: sudo apt-get install -y ant build-essential ant-optional default-jdk python cmake valgrind ntp ccache git-arch git-completion git-core git-svn git-doc git-email python-httplib2 python-setuptools python-dev apt-show-versions
       - checkout
       - run: ant clean
       - run: ant dist_internal
@@ -22,7 +22,7 @@ jobs:
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
-      - run: sudo apt-get install -y cmake
+      - run: sudo apt-get install -y ant build-essential ant-optional default-jdk python cmake valgrind ntp ccache git-arch git-completion git-core git-svn git-doc git-email python-httplib2 python-setuptools python-dev apt-show-versions
       - checkout
       - attach_workspace:
           at: .
@@ -35,7 +35,7 @@ jobs:
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
-      - run: sudo apt-get install -y cmake
+      - run: sudo apt-get install -y ant build-essential ant-optional default-jdk python cmake valgrind ntp ccache git-arch git-completion git-core git-svn git-doc git-email python-httplib2 python-setuptools python-dev apt-show-versions
       - checkout
       - attach_workspace:
           at: .
@@ -48,7 +48,7 @@ jobs:
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
-      - run: sudo apt-get install -y cmake
+      - run: sudo apt-get install -y ant build-essential ant-optional default-jdk python cmake valgrind ntp ccache git-arch git-completion git-core git-svn git-doc git-email python-httplib2 python-setuptools python-dev apt-show-versions
       - checkout
       - attach_workspace:
           at: .
@@ -61,7 +61,7 @@ jobs:
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
-      - run: sudo apt-get install -y cmake
+      - run: sudo apt-get install -y ant build-essential ant-optional default-jdk python cmake valgrind ntp ccache git-arch git-completion git-core git-svn git-doc git-email python-httplib2 python-setuptools python-dev apt-show-versions
       - checkout
       - attach_workspace:
           at: .
@@ -74,7 +74,7 @@ jobs:
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
-      - run: sudo apt-get install -y cmake
+      - run: sudo apt-get install -y ant build-essential ant-optional default-jdk python cmake valgrind ntp ccache git-arch git-completion git-core git-svn git-doc git-email python-httplib2 python-setuptools python-dev apt-show-versions
       - checkout
       - attach_workspace:
           at: .
@@ -87,7 +87,7 @@ jobs:
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
-      - run: sudo apt-get install -y cmake
+      - run: sudo apt-get install -y ant build-essential ant-optional default-jdk python cmake valgrind ntp ccache git-arch git-completion git-core git-svn git-doc git-email python-httplib2 python-setuptools python-dev apt-show-versions
       - checkout
       - attach_workspace:
           at: .
@@ -100,7 +100,7 @@ jobs:
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
-      - run: sudo apt-get install -y cmake
+      - run: sudo apt-get install -y ant build-essential ant-optional default-jdk python cmake valgrind ntp ccache git-arch git-completion git-core git-svn git-doc git-email python-httplib2 python-setuptools python-dev apt-show-versions
       - checkout
       - attach_workspace:
           at: .
