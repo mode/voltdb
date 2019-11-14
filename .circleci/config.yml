@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:8u232-jdk-stretch
+      - image: circleci/openjdk:8u232-jdk
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
@@ -18,7 +18,7 @@ jobs:
             - obj
   junit_regression_h1:
     docker:
-      - image: circleci/openjdk:8u232-jdk-stretch
+      - image: circleci/openjdk:8u232-jdk
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
@@ -31,7 +31,7 @@ jobs:
           path: obj/release/testoutput
   junit_regression_h2:
     docker:
-      - image: circleci/openjdk:8u232-jdk-stretch
+      - image: circleci/openjdk:8u232-jdk
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
@@ -44,7 +44,7 @@ jobs:
           path: obj/release/testoutput
   junit_other_p1:
     docker:
-      - image: circleci/openjdk:8u232-jdk-stretch
+      - image: circleci/openjdk:8u232-jdk
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
@@ -57,7 +57,7 @@ jobs:
           path: obj/release/testoutput
   junit_other_p2:
     docker:
-      - image: circleci/openjdk:8u232-jdk-stretch
+      - image: circleci/openjdk:8u232-jdk
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
@@ -70,7 +70,7 @@ jobs:
           path: obj/release/testoutput
   junit_other_p3:
     docker:
-      - image: circleci/openjdk:8u232-jdk-stretch
+      - image: circleci/openjdk:8u232-jdk
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
@@ -83,7 +83,7 @@ jobs:
           path: obj/release/testoutput
   junit_other_p4:
     docker:
-      - image: circleci/openjdk:8u232-jdk-stretch
+      - image: circleci/openjdk:8u232-jdk
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
@@ -96,7 +96,7 @@ jobs:
           path: obj/release/testoutput
   package:
     docker:
-      - image: circleci/openjdk:8u232-jdk-stretch
+      - image: circleci/openjdk:8u232-jdk
     resource_class: xlarge
     steps:
       - run: sudo apt-get update
