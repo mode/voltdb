@@ -26,7 +26,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
-      - run: ant quick_check
+      - run: ant licensecheck junit_quick
       - store_test_results:
           path: obj/release/testoutput
 
