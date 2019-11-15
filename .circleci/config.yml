@@ -1,0 +1,23 @@
+version: 2
+
+jobs:
+  dist:
+    docker:
+      - image: ubuntu:16.04
+    resource_class: xlarge
+    steps:
+      - run: apt-get update
+      - run: apt-get install -y openjdk-8-jdk-headless ant build-essential cmake python git
+      - checkout
+      - run: ant clean
+      - run: ant dist
+      - run: cp obj/release/voltdb-community-*.tar.gz obj/release/mode-voltdb-community.tar.gz
+      - store_artifacts:
+          path: obj/release/mode-voltdb-community.tar.gz
+          destination: mode-voltdb-community.tar.gz
+
+workflows:
+  version: 2
+  build_and_package:
+    jobs:
+      - dist
