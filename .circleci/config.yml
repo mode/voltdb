@@ -26,7 +26,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
-      - run: ant check
+      - run: ant quick_check
       - store_test_results:
           path: obj/release/testoutput
 
