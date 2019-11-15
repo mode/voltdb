@@ -23,6 +23,6 @@ jobs:
 
 workflows:
   version: 2
-  build_test_package:
+  build_and_package:
     jobs:
       - dist
