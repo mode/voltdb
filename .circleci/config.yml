@@ -19,7 +19,7 @@ jobs:
       - run: cp obj/release/voltdb-community-*.tar.gz obj/release/mode-voltdb-community.tar.gz
       - store_artifacts:
           path: obj/release/mode-voltdb-community.tar.gz
-          destination: release
+          destination: mode-voltdb-community.tar.gz
 
 workflows:
   version: 2
