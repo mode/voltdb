@@ -17,7 +17,7 @@ jobs:
             - voltdb
             - obj
       - store_artifacts:
-          path: obj/release/voltdb-community-*.tar.gz
+          path: obj/release/voltdb-community-8.4.6.tar.gz
   check_quick:
     docker:
       - image: circleci/openjdk:8-jdk
