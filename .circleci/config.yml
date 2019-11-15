@@ -11,11 +11,6 @@ jobs:
       - checkout
       - run: ant clean
       - run: ant dist
-      - persist_to_workspace:
-          root: .
-          paths:
-            - voltdb
-            - obj
       - run: cp obj/release/voltdb-community-*.tar.gz obj/release/mode-voltdb-community.tar.gz
       - store_artifacts:
           path: obj/release/mode-voltdb-community.tar.gz
