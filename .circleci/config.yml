@@ -20,23 +20,9 @@ jobs:
       - store_artifacts:
           path: obj/release/mode-voltdb-community.tar.gz
           destination: release
-  check_quick:
-    docker:
-      - image: circleci/openjdk:8-jdk
-    resource_class: xlarge
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run: ant licensecheck junit_quick
-      - store_test_results:
-          path: obj/release/testoutput
 
 workflows:
   version: 2
   build_test_package:
     jobs:
       - dist
-      - check_quick:
-          requires:
-            - dist
