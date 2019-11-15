@@ -11,13 +11,15 @@ jobs:
       - checkout
       - run: ant clean
       - run: ant dist
+      - run: cp obj/release/voltdb-community-*.tar.gz obj/release/mode-voltdb-community.tar.gz
       - persist_to_workspace:
           root: .
           paths:
             - voltdb
             - obj
       - store_artifacts:
-          path: obj/release/voltdb-community-8.4.6.tar.gz
+          path: obj/release/mode-voltdb-community.tar.gz
+          destination: release
   check_quick:
     docker:
       - image: circleci/openjdk:8-jdk
