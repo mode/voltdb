@@ -9,9 +9,9 @@ jobs:
 
     steps:
     - name: update package info
-      run: apt-get update
+      run: sudo apt-get update
     - name: install dependencies
-      run: apt-get install -y openjdk-8-jdk-headless ant build-essential cmake python git
+      run: sudo apt-get install -y openjdk-8-jdk-headless ant build-essential cmake python git
     - uses: actions/checkout@v1
     - name: build voltdb
       run: ant clean dist
