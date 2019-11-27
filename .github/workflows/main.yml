@@ -15,3 +15,10 @@ jobs:
     - uses: actions/checkout@v1
     - name: build voltdb
       run: ant clean dist
+    - name: normalize build tarball filename
+      run: cp obj/release/voltdb-community-*.tar.gz obj/release/mode-voltdb-community.tar.gz
+    - name: upload build tarball
+      uses: actions/upload-artifact@v1
+      with:
+        name: mode-voltdb-community.tar.gz
+        path: obj/release/mode-voltdb-community.tar.gz
