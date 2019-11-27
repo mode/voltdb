@@ -4,9 +4,7 @@ on: [push]
 
 jobs:
   build:
-
-    runs-on: ubuntu-16.04
-
+    runs-on: [ubuntu-16.04]
     steps:
     - name: update package info
       run: sudo apt-get update
@@ -14,7 +12,45 @@ jobs:
       run: sudo apt-get install -y openjdk-8-jdk-headless ant build-essential cmake python git
     - uses: actions/checkout@v1
     - name: build voltdb
-      run: ant clean dist
+      run: ant clean dist_internal
+    - name: upload build results - voltdb
+      uses: actions/upload-artifact@v1
+      with:
+        name: voltdb
+        path: voltdb
+    - name: upload build results - obj
+      uses: actions/upload-artifact@v1
+      with:
+        name: obj
+        path: obj
+  junit_regression_h1:
+    runs-on: [ubuntu-16.04]
+    needs: [build]
+    steps:
+    - name: update package info
+      run: sudo apt-get update
+    - name: install dependencies
+      run: sudo apt-get install -y openjdk-8-jdk-headless ant build-essential cmake python git
+    - uses: actions/checkout@v1
+    - name: download build results - voltdb
+      uses: actions/download-artifact@v1
+      with:
+        name: voltdb
+    - name: download build results - obj
+      uses: actions/download-artifact@v1
+      with:
+        name: obj
+    - name: run tests
+      run: ant junit_regression_h1
+    - name: upload test results
+      uses: actions/upload-artifact@v1
+      with:
+        name: junit_regression_h1-testoutput
+        path: obj/release/testoutput
+  package:
+    runs-on: [ubuntu-16.04]
+    needs: [junit_regression_h1]
+    steps:
     - name: normalize build tarball filename
       run: cp obj/release/voltdb-community-*.tar.gz obj/release/mode-voltdb-community.tar.gz
     - name: upload build tarball
