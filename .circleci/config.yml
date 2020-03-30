@@ -1,10 +1,28 @@
-version: 2
+version: 2.1
+
+workflows:
+  build_and_package:
+    jobs:
+      - dist
+      - build-docker-image:
+          context: Shared Secrets
+          filters:
+            branches:
+              ignore: mode-release-8.x
+      - publish-docker-image:
+          context: Shared Secrets
+          filters:
+            branches:
+              only: mode-release-8.x
+
+
 
 jobs:
+
   dist:
+    resource_class: xlarge
     docker:
       - image: ubuntu:16.04
-    resource_class: xlarge
     steps:
       - run: apt-get update
       - run: apt-get install -y openjdk-8-jdk-headless ant build-essential cmake python git
@@ -16,8 +34,72 @@ jobs:
           path: obj/release/mode-voltdb-community.tar.gz
           destination: mode-voltdb-community.tar.gz
 
-workflows:
-  version: 2
-  build_and_package:
-    jobs:
-      - dist
+
+  build-docker-image:
+    resource_class: xlarge
+    docker:
+      - image: ubuntu:16.04
+    steps:
+      - setup_docker_image_context:
+          docker_login_username: $MODECI_GITHUB_USERNAME
+          docker_login_token: $MODECI_GITHUB_USER_TOKEN
+      - run:
+          name: Build and publish docker image
+          command: |
+            DOCKER_TAG=`cat version.txt`
+            docker build \
+                -f .circleci/docker/Dockerfile \
+                -t docker.pkg.github.com/mode/voltdb/voltdb:${DOCKER_TAG}-${CIRCLE_SHA1} \
+                .
+            docker push docker.pkg.github.com/mode/voltdb/voltdb:${DOCKER_TAG}-${CIRCLE_SHA1}
+
+
+  publish-docker-image:
+    resource_class: xlarge
+    docker:
+      - image: ubuntu:16.04
+    steps:
+      - setup_docker_image_context:
+          docker_login_username: $MODECI_GITHUB_USERNAME
+          docker_login_token: $MODECI_GITHUB_USER_TOKEN
+      - run:
+          name: Build and publish docker image
+          command: |
+            DOCKER_TAG=`cat version.txt`
+            docker build -f .circleci/docker/Dockerfile \
+                -t docker.pkg.github.com/mode/voltdb/voltdb:${DOCKER_TAG}-${CIRCLE_SHA1} \
+                -t docker.pkg.github.com/mode/voltdb/voltdb:${DOCKER_TAG} \
+                -t docker.pkg.github.com/mode/voltdb/voltdb:latest \
+                .
+            docker push docker.pkg.github.com/mode/voltdb/voltdb:${DOCKER_TAG}-${CIRCLE_SHA1}
+            docker push docker.pkg.github.com/mode/voltdb/voltdb:${DOCKER_TAG}
+            docker push docker.pkg.github.com/mode/voltdb/voltdb:latest
+
+
+
+commands:
+
+  setup_docker_image_context:
+    description: "Setup docker image builder/publisher container"
+    parameters:
+      docker_login_username:
+        type: string
+      docker_login_token:
+        type: string
+    steps:
+      - run: apt-get update
+      - run: apt-get install -y git
+      - run:
+          name: Install Docker CLI Dependencies
+          command: |
+            apt-get update
+            apt-get install -y curl apt-transport-https ca-certificates gnupg-agent software-properties-common
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+            apt-key fingerprint 0EBFCD88
+            add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+            apt-get update
+            apt-get install docker-ce-cli
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: echo << parameters.docker_login_token >> | docker login docker.pkg.github.com -u << parameters.docker_login_username >> --password-stdin
