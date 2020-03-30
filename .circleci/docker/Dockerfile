@@ -32,11 +32,10 @@ ENV PATH=$PATH:$VOLTDB_DIST/bin
 
 COPY --from=builder /opt/voltdb/obj/release/voltdb-community.tar.gz voltdb-community.tar.gz
 
-RUN tar -zxf voltdb-community.tar.gz
-RUN mv voltdb-community-* voltdb-community
 RUN mkdir -p ${VOLTDB_DIST}
-RUN cp -r voltdb-community/* $VOLTDB_DIST
-RUN rm -r voltdb-community voltdb-community.tar.gz
+
+RUN tar -zxf voltdb-community.tar.gz --strip-components=1 -C $VOLTDB_DIST && \
+  rm -r voltdb-community.tar.gz
 
 RUN useradd -ms /bin/bash voltdb
 USER voltdb
