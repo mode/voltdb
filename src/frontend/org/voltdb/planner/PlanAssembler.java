@@ -115,7 +115,7 @@ public class PlanAssembler {
         }
     }
 
-    private static final Set<ExpressionType> PERCENTILE_EXPRESSIONS = Collections.synchronizedSet(EnumSet.of(
+    private static final Set<ExpressionType> PERCENTILE_EXPRESSIONS = Collections.unmodifiableSet(EnumSet.of(
             ExpressionType.AGGREGATE_MEDIAN,
             ExpressionType.AGGREGATE_PERCENTILE_1,
             ExpressionType.AGGREGATE_PERCENTILE_5,
