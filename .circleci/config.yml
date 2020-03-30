@@ -6,12 +6,14 @@ workflows:
       - dist
       - build-docker-image:
           context: Shared Secrets
+          filters:
+            branches:
+              ignore: mode-release-8.x
       - publish-docker-image:
           context: Shared Secrets
           filters:
             branches:
-              only:
-                - mode-release-8.x
+              only: mode-release-8.x
 
 
 
