@@ -131,6 +131,13 @@ public class Expression {
         aggregateFunctionSet.add(OpTypes.MAX);
         aggregateFunctionSet.add(OpTypes.AVG);
         aggregateFunctionSet.add(OpTypes.EVERY);
+        aggregateFunctionSet.add(OpTypes.MEDIAN);
+        aggregateFunctionSet.add(OpTypes.PERCENTILE_1);
+        aggregateFunctionSet.add(OpTypes.PERCENTILE_5);
+        aggregateFunctionSet.add(OpTypes.PERCENTILE_25);
+        aggregateFunctionSet.add(OpTypes.PERCENTILE_75);
+        aggregateFunctionSet.add(OpTypes.PERCENTILE_95);
+        aggregateFunctionSet.add(OpTypes.PERCENTILE_99);
         aggregateFunctionSet.add(OpTypes.SOME);
         aggregateFunctionSet.add(OpTypes.STDDEV_POP);
         aggregateFunctionSet.add(OpTypes.STDDEV_SAMP);
@@ -167,6 +174,13 @@ public class Expression {
         subqueryAggregateExpressionSet.add(OpTypes.MAX);
         subqueryAggregateExpressionSet.add(OpTypes.AVG);
         subqueryAggregateExpressionSet.add(OpTypes.EVERY);
+        subqueryAggregateExpressionSet.add(OpTypes.MEDIAN);
+        subqueryAggregateExpressionSet.add(OpTypes.PERCENTILE_1);
+        subqueryAggregateExpressionSet.add(OpTypes.PERCENTILE_5);
+        subqueryAggregateExpressionSet.add(OpTypes.PERCENTILE_25);
+        subqueryAggregateExpressionSet.add(OpTypes.PERCENTILE_75);
+        subqueryAggregateExpressionSet.add(OpTypes.PERCENTILE_95);
+        subqueryAggregateExpressionSet.add(OpTypes.PERCENTILE_99);
         subqueryAggregateExpressionSet.add(OpTypes.SOME);
         subqueryAggregateExpressionSet.add(OpTypes.STDDEV_POP);
         subqueryAggregateExpressionSet.add(OpTypes.STDDEV_SAMP);
@@ -585,6 +599,13 @@ public class Expression {
             case OpTypes.MAX :
             case OpTypes.AVG :
             case OpTypes.EVERY :
+            case OpTypes.MEDIAN :
+            case OpTypes.PERCENTILE_1 :
+            case OpTypes.PERCENTILE_5 :
+            case OpTypes.PERCENTILE_25 :
+            case OpTypes.PERCENTILE_75 :
+            case OpTypes.PERCENTILE_95 :
+            case OpTypes.PERCENTILE_99 :
             case OpTypes.SOME :
             case OpTypes.STDDEV_POP :
             case OpTypes.STDDEV_SAMP :
@@ -1566,6 +1587,13 @@ public class Expression {
         prototypes.put(OpTypes.MAX,           (new VoltXMLElement("aggregation")).withValue("optype", "max"));
         prototypes.put(OpTypes.AVG,           (new VoltXMLElement("aggregation")).withValue("optype", "avg"));
         prototypes.put(OpTypes.EVERY,         (new VoltXMLElement("aggregation")).withValue("optype", "every"));
+        prototypes.put(OpTypes.MEDIAN, (new VoltXMLElement("aggregation")).withValue("optype", "median"));
+        prototypes.put(OpTypes.PERCENTILE_1, (new VoltXMLElement("aggregation")).withValue("optype", "percentile_1"));
+        prototypes.put(OpTypes.PERCENTILE_5, (new VoltXMLElement("aggregation")).withValue("optype", "percentile_5"));
+        prototypes.put(OpTypes.PERCENTILE_25, (new VoltXMLElement("aggregation")).withValue("optype", "percentile_25"));
+        prototypes.put(OpTypes.PERCENTILE_75, (new VoltXMLElement("aggregation")).withValue("optype", "percentile_75"));
+        prototypes.put(OpTypes.PERCENTILE_95, (new VoltXMLElement("aggregation")).withValue("optype", "percentile_95"));
+        prototypes.put(OpTypes.PERCENTILE_99, (new VoltXMLElement("aggregation")).withValue("optype", "percentile_99"));
         prototypes.put(OpTypes.SOME,          (new VoltXMLElement("aggregation")).withValue("optype", "some"));
         prototypes.put(OpTypes.STDDEV_POP,    (new VoltXMLElement("aggregation")).withValue("optype", "stddevpop"));
         prototypes.put(OpTypes.STDDEV_SAMP,   (new VoltXMLElement("aggregation")).withValue("optype", "stddevsamp"));

@@ -562,6 +562,63 @@ public:
     }
 };
 
+/// Single partition aggregate
+class PercentileAgg : public Agg {
+    double m_percentile;
+
+    public:
+        PercentileAgg(double percentile) : m_percentile(percentile)
+        {
+        }
+
+        virtual void advance(const NValue& val)
+        {
+            // TODO: do the thing
+        }
+
+        virtual NValue finalize(ValueType type)
+        {
+            // TODO: do the thing
+            return ValueFactory::getDoubleValue(m_percentile);
+        }
+
+        virtual void resetAgg()
+        {
+            Agg::resetAgg();
+        }
+};
+
+/// Push-down (multi partition) aggregate
+class ValuesToTDigestAgg : public Agg {
+public:
+    virtual void advance(const NValue& val)
+    {
+        // TODO: do the thing
+    }
+
+    virtual NValue finalize(ValueType type)
+    {
+        // TODO: do the thing
+        assert (type == VALUE_TYPE_VARBINARY);
+        int byteSize = 0;
+        char *serializedBytes = new char[byteSize];
+        return ValueFactory::getTempBinaryValue(serializedBytes, byteSize);
+    }
+};
+
+/// Pull-up (multi partition) aggregate
+class TDigestToPercentileAgg : public PercentileAgg {
+public:
+    TDigestToPercentileAgg(double percentile) : PercentileAgg(percentile)
+    {
+    }
+
+    virtual void advance(const NValue& val)
+    {
+        // TODO: do the thing
+    }
+};
+
 /*
  * Create an instance of an aggregator for the specified aggregate type and "distinct" flag.
  * The object is allocated from the provided memory pool.
@@ -602,6 +659,36 @@ inline Agg* getAggInstance(Pool& memoryPool, ExpressionType agg_type, bool isDis
         return new (memoryPool) ValuesToCompactAgg();
     case EXPRESSION_TYPE_AGGREGATE_COMPACT_TO_CARDINALITY:
         return new (memoryPool) CompactToCardinalityAgg();
+    case EXPRESSION_TYPE_AGGREGATE_VALUES_TO_TDIGEST:
+        return new (memoryPool) ValuesToTDigestAgg();
+    case EXPRESSION_TYPE_AGGREGATE_MEDIAN:
+        return new (memoryPool) PercentileAgg(50);
+    case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_MEDIAN:
+        return new (memoryPool) TDigestToPercentileAgg(50);
+    case EXPRESSION_TYPE_AGGREGATE_PERCENTILE_1:
+        return new (memoryPool) PercentileAgg(1);
+    case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_PERCENTILE_1:
+        return new (memoryPool) TDigestToPercentileAgg(1);
+    case EXPRESSION_TYPE_AGGREGATE_PERCENTILE_5:
+        return new (memoryPool) PercentileAgg(5);
+    case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_PERCENTILE_5:
+        return new (memoryPool) TDigestToPercentileAgg(5);
+    case EXPRESSION_TYPE_AGGREGATE_PERCENTILE_25:
+        return new (memoryPool) PercentileAgg(25);
+    case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_PERCENTILE_25:
+        return new (memoryPool) TDigestToPercentileAgg(25);
+    case EXPRESSION_TYPE_AGGREGATE_PERCENTILE_75:
+        return new (memoryPool) PercentileAgg(75);
+    case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_PERCENTILE_75:
+        return new (memoryPool) TDigestToPercentileAgg(75);
+    case EXPRESSION_TYPE_AGGREGATE_PERCENTILE_95:
+        return new (memoryPool) PercentileAgg(95);
+    case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_PERCENTILE_95:
+        return new (memoryPool) TDigestToPercentileAgg(95);
+    case EXPRESSION_TYPE_AGGREGATE_PERCENTILE_99:
+        return new (memoryPool) PercentileAgg(99);
+    case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_PERCENTILE_99:
+        return new (memoryPool) TDigestToPercentileAgg(99);
     default:
         {
             char message[128];

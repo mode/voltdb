@@ -267,6 +267,13 @@ public class Tokens {
     static final String        T_PERCENT_RANK      = "PERCENT_RANK";
     static final String        T_PERCENTILE_CONT   = "PERCENTILE_CONT";
     static final String        T_PERCENTILE_DISC   = "PERCENTILE_DISC";
+    static final String        T_MEDIAN            = "MEDIAN";
+    static final String        T_PERCENTILE_1      = "PERCENTILE_1";
+    static final String        T_PERCENTILE_5      = "PERCENTILE_5";
+    static final String        T_PERCENTILE_25     = "PERCENTILE_25";
+    static final String        T_PERCENTILE_75     = "PERCENTILE_75";
+    static final String        T_PERCENTILE_95     = "PERCENTILE_95";
+    static final String        T_PERCENTILE_99     = "PERCENTILE_99";
     static final String        T_POSITION          = "POSITION";
     static final String        T_POSITION_REGEX    = "POSITION_REGEX";
     static final String        T_POWER             = "POWER";
@@ -1044,6 +1051,13 @@ public class Tokens {
     public static final int PERCENT_RANK                     = 204;
     public static final int PERCENTILE_CONT                  = 205;
     public static final int PERCENTILE_DISC                  = 206;
+    public static final int MEDIAN                           = 1308;
+    public static final int PERCENTILE_1                     = 1309;
+    public static final int PERCENTILE_5                     = 1310;
+    public static final int PERCENTILE_25                    = 1311;
+    public static final int PERCENTILE_75                    = 1312;
+    public static final int PERCENTILE_95                    = 1313;
+    public static final int PERCENTILE_99                    = 1314;
     public static final int POSITION                         = 207;
     public static final int POSITION_REGEX                   = 208;
     public static final int POWER                            = 209;
@@ -1858,6 +1872,13 @@ public class Tokens {
         reservedKeys.put(Tokens.T_PERCENT_RANK, PERCENT_RANK);
         reservedKeys.put(Tokens.T_PERCENTILE_CONT, PERCENTILE_CONT);
         reservedKeys.put(Tokens.T_PERCENTILE_DISC, PERCENTILE_DISC);
+        reservedKeys.put(Tokens.T_MEDIAN, MEDIAN);
+        reservedKeys.put(Tokens.T_PERCENTILE_1, PERCENTILE_1);
+        reservedKeys.put(Tokens.T_PERCENTILE_5, PERCENTILE_5);
+        reservedKeys.put(Tokens.T_PERCENTILE_25, PERCENTILE_25);
+        reservedKeys.put(Tokens.T_PERCENTILE_75, PERCENTILE_75);
+        reservedKeys.put(Tokens.T_PERCENTILE_95, PERCENTILE_95);
+        reservedKeys.put(Tokens.T_PERCENTILE_99, PERCENTILE_99);
         reservedKeys.put(Tokens.T_POSITION, POSITION);
         reservedKeys.put(Tokens.T_POSITION_REGEX, POSITION_REGEX);
         reservedKeys.put(Tokens.T_POWER, POWER);
@@ -2330,6 +2351,13 @@ public class Tokens {
             APPROX_COUNT_DISTINCT,
             COMPACT_COUNT_DISTINCT,
             // End of VoltDB extension
+            MEDIAN,
+            PERCENTILE_1,
+            PERCENTILE_5,
+            PERCENTILE_25,
+            PERCENTILE_75,
+            PERCENTILE_95,
+            PERCENTILE_99,
             // A VoltDB extension STREAM
             STREAM,
             // End of VoltDB extension

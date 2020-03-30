@@ -116,6 +116,34 @@ public class ExpressionAggregate extends Expression {
                 sb.append(left).append(')');
                 break;
 
+            case OpTypes.MEDIAN :
+                sb.append(' ').append(Tokens.MEDIAN).append('(');
+                break;
+
+            case OpTypes.PERCENTILE_1 :
+                sb.append(' ').append(Tokens.T_PERCENTILE_1).append('(');
+                break;
+
+            case OpTypes.PERCENTILE_5 :
+                sb.append(' ').append(Tokens.T_PERCENTILE_5).append('(');
+                break;
+
+            case OpTypes.PERCENTILE_25 :
+                sb.append(' ').append(Tokens.T_PERCENTILE_25).append('(');
+                break;
+
+            case OpTypes.PERCENTILE_75 :
+                sb.append(' ').append(Tokens.T_PERCENTILE_75).append('(');
+                break;
+
+            case OpTypes.PERCENTILE_95 :
+                sb.append(' ').append(Tokens.T_PERCENTILE_95).append('(');
+                break;
+
+            case OpTypes.PERCENTILE_99 :
+                sb.append(' ').append(Tokens.T_PERCENTILE_99).append('(');
+                break;
+
             case OpTypes.SOME :
                 sb.append(' ').append(Tokens.T_SOME).append('(');
                 sb.append(left).append(')');
@@ -191,6 +219,34 @@ public class ExpressionAggregate extends Expression {
 
             case OpTypes.EVERY :
                 sb.append(Tokens.T_EVERY).append(' ');
+                break;
+
+            case OpTypes.MEDIAN :
+                sb.append("MEDIAN ");
+                break;
+
+            case OpTypes.PERCENTILE_1 :
+                sb.append("PERCENTILE_1 ");
+                break;
+
+            case OpTypes.PERCENTILE_5 :
+                sb.append("PERCENTILE_5 ");
+                break;
+
+            case OpTypes.PERCENTILE_25 :
+                sb.append("PERCENTILE_25 ");
+                break;
+
+            case OpTypes.PERCENTILE_75 :
+                sb.append("PERCENTILE_75 ");
+                break;
+
+            case OpTypes.PERCENTILE_95 :
+                sb.append("PERCENTILE_95 ");
+                break;
+
+            case OpTypes.PERCENTILE_99 :
+                sb.append("PERCENTILE_99 ");
                 break;
 
             case OpTypes.SOME :

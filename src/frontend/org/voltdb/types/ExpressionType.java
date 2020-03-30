@@ -129,6 +129,21 @@ public enum ExpressionType {
     AGGREGATE_COMPACT_COUNT_DISTINCT (AggregateExpression.class, 49, "COMPACT_COUNT_DISTINCT", true),
     AGGREGATE_VALUES_TO_COMPACT      (AggregateExpression.class, 50, "VALUES_TO_COMPACT"),
     AGGREGATE_COMPACT_TO_CARDINALITY (AggregateExpression.class, 51, "COMPACT_TO_CARDINALITY"),
+    AGGREGATE_VALUES_TO_TDIGEST (AggregateExpression.class, 52, "VALUES_TO_TDIGEST"),
+    AGGREGATE_MEDIAN (AggregateExpression.class, 53, "MEDIAN"),
+    AGGREGATE_TDIGEST_TO_MEDIAN (AggregateExpression.class, 54, "TDIGEST_TO_MEDIAN"),
+    AGGREGATE_PERCENTILE_1 (AggregateExpression.class, 55, "PERCENTILE_1"),
+    AGGREGATE_TDIGEST_TO_PERCENTILE_1 (AggregateExpression.class, 56, "TDIGEST_TO_PERCENTILE_1"),
+    AGGREGATE_PERCENTILE_5 (AggregateExpression.class, 57, "PERCENTILE_5"),
+    AGGREGATE_TDIGEST_TO_PERCENTILE_5 (AggregateExpression.class, 58, "TDIGEST_TO_PERCENTILE_5"),
+    AGGREGATE_PERCENTILE_25 (AggregateExpression.class, 59, "PERCENTILE_25"),
+    AGGREGATE_TDIGEST_TO_PERCENTILE_25 (AggregateExpression.class, 60, "TDIGEST_TO_PERCENTILE_25"),
+    AGGREGATE_PERCENTILE_75 (AggregateExpression.class, 61, "PERCENTILE_75"),
+    AGGREGATE_TDIGEST_TO_PERCENTILE_75 (AggregateExpression.class, 62, "TDIGEST_TO_PERCENTILE_75"),
+    AGGREGATE_PERCENTILE_95 (AggregateExpression.class, 63, "PERCENTILE_95"),
+    AGGREGATE_TDIGEST_TO_PERCENTILE_95 (AggregateExpression.class, 64, "TDIGEST_TO_PERCENTILE_95"),
+    AGGREGATE_PERCENTILE_99 (AggregateExpression.class, 65, "PERCENTILE_99"),
+    AGGREGATE_TDIGEST_TO_PERCENTILE_99 (AggregateExpression.class, 66, "TDIGEST_TO_PERCENTILE_99"),
     // ----------------------------
     // Windowed Aggregates.  We need to treat these
     // somewhat differently than the non-windowed
