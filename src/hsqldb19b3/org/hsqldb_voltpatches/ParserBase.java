@@ -717,6 +717,13 @@ public class ParserBase {
         expressionTypeMap.put(Tokens.SUM, OpTypes.SUM);
         expressionTypeMap.put(Tokens.AVG, OpTypes.AVG);
         expressionTypeMap.put(Tokens.EVERY, OpTypes.EVERY);
+        expressionTypeMap.put(Tokens.MEDIAN, OpTypes.MEDIAN);
+        expressionTypeMap.put(Tokens.PERCENTILE_1, OpTypes.PERCENTILE_1);
+        expressionTypeMap.put(Tokens.PERCENTILE_5, OpTypes.PERCENTILE_5);
+        expressionTypeMap.put(Tokens.PERCENTILE_25, OpTypes.PERCENTILE_25);
+        expressionTypeMap.put(Tokens.PERCENTILE_75, OpTypes.PERCENTILE_75);
+        expressionTypeMap.put(Tokens.PERCENTILE_95, OpTypes.PERCENTILE_95);
+        expressionTypeMap.put(Tokens.PERCENTILE_99, OpTypes.PERCENTILE_99);
         expressionTypeMap.put(Tokens.ANY, OpTypes.SOME);
         expressionTypeMap.put(Tokens.SOME, OpTypes.SOME);
         expressionTypeMap.put(Tokens.STDDEV_POP, OpTypes.STDDEV_POP);
