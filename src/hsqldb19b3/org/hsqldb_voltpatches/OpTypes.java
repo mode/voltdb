@@ -102,6 +102,13 @@ public interface OpTypes {
         // A VoltDB extension APPROX_COUNT_DISTINCT
         , APPROX_COUNT_DISTINCT = 98
         , COMPACT_COUNT_DISTINCT = 106
+        , MEDIAN = 107
+        , PERCENTILE_1 = 108
+        , PERCENTILE_5 = 109
+        , PERCENTILE_25 = 110
+        , PERCENTILE_75 = 111
+        , PERCENTILE_95 = 112
+        , PERCENTILE_99 = 113
         // The WindowedAggregate operators go here.  There
         // will be some duplication with the grouped aggregate
         // operators.  That is to say, MAX, MIN, and so forth

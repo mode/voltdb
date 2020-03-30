@@ -88,11 +88,32 @@ public class AggregateExpression extends AbstractExpression {
             expr.m_valueType = VoltType.BIGINT;
             expr.m_valueSize = expr.m_valueType.getLengthInBytesForFixedTypes();
             break;
+        case AGGREGATE_MEDIAN:
+        case AGGREGATE_PERCENTILE_1:
+        case AGGREGATE_PERCENTILE_5:
+        case AGGREGATE_PERCENTILE_25:
+        case AGGREGATE_PERCENTILE_75:
+        case AGGREGATE_PERCENTILE_95:
+        case AGGREGATE_PERCENTILE_99:
+        case AGGREGATE_TDIGEST_TO_MEDIAN:
+        case AGGREGATE_TDIGEST_TO_PERCENTILE_1:
+        case AGGREGATE_TDIGEST_TO_PERCENTILE_5:
+        case AGGREGATE_TDIGEST_TO_PERCENTILE_25:
+        case AGGREGATE_TDIGEST_TO_PERCENTILE_75:
+        case AGGREGATE_TDIGEST_TO_PERCENTILE_95:
+        case AGGREGATE_TDIGEST_TO_PERCENTILE_99:
+            //
+            // Always a float (double)
+            //
+            expr.m_valueType = VoltType.FLOAT;
+            expr.m_valueSize = expr.m_valueType.getLengthInBytesForFixedTypes();
+            break;
         case AGGREGATE_VALS_TO_HYPERLOGLOG:
             expr.m_valueType = VoltType.VARBINARY;
             expr.m_valueSize = 65537;
             break;
         case AGGREGATE_VALUES_TO_COMPACT:
+        case AGGREGATE_VALUES_TO_TDIGEST:
             expr.m_valueType = VoltType.VARBINARY;
             expr.m_valueSize = 1024 * 1024 * 8; // AbstractExpression enforces 10_000_000
             break;

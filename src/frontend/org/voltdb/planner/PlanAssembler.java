@@ -19,6 +19,8 @@ package org.voltdb.planner;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -112,6 +114,15 @@ public class PlanAssembler {
             m_isContentDeterministic = isContentDeterministic;
         }
     }
+
+    private static final Set<ExpressionType> PERCENTILE_EXPRESSIONS = Collections.synchronizedSet(EnumSet.of(
+            ExpressionType.AGGREGATE_MEDIAN,
+            ExpressionType.AGGREGATE_PERCENTILE_1,
+            ExpressionType.AGGREGATE_PERCENTILE_5,
+            ExpressionType.AGGREGATE_PERCENTILE_25,
+            ExpressionType.AGGREGATE_PERCENTILE_75,
+            ExpressionType.AGGREGATE_PERCENTILE_95,
+            ExpressionType.AGGREGATE_PERCENTILE_99));
 
     /** convenience pointer to the database object in the catalog */
     private final Database m_catalogDb;
@@ -2744,6 +2755,7 @@ public class PlanAssembler {
                          */
                         else if (agg_expression_type != ExpressionType.AGGREGATE_MIN &&
                                  agg_expression_type != ExpressionType.AGGREGATE_MAX &&
+                                 !PERCENTILE_EXPRESSIONS.contains(agg_expression_type) &&
                                  agg_expression_type != ExpressionType.AGGREGATE_APPROX_COUNT_DISTINCT &&
                                  agg_expression_type != ExpressionType.AGGREGATE_COMPACT_COUNT_DISTINCT) {
                             /*
@@ -3001,6 +3013,7 @@ public class PlanAssembler {
         List<ExpressionType> distAggTypes = distNode.getAggregateTypes();
         boolean hasApproxCountDistinct = false;
         boolean hasCompactCountDistinct = false;
+        boolean hasPercentile = false;
         for (int i = 0; i < distAggTypes.size(); ++i) {
             ExpressionType et = distAggTypes.get(i);
             if (et == ExpressionType.AGGREGATE_APPROX_COUNT_DISTINCT) {
@@ -3011,6 +3024,11 @@ public class PlanAssembler {
             if (et == ExpressionType.AGGREGATE_COMPACT_COUNT_DISTINCT) {
                 hasCompactCountDistinct = true;
                 distNode.updateAggregate(i, ExpressionType.AGGREGATE_VALUES_TO_COMPACT);
+            }
+
+            if (PERCENTILE_EXPRESSIONS.contains(et)) {
+                hasPercentile = true;
+                distNode.updateAggregate(i, ExpressionType.AGGREGATE_VALUES_TO_TDIGEST);
             }
         }
 
@@ -3032,6 +3050,29 @@ public class PlanAssembler {
                 ExpressionType et = coordAggTypes.get(i);
                 if (et == ExpressionType.AGGREGATE_COMPACT_COUNT_DISTINCT) {
                     coordNode.updateAggregate(i, ExpressionType.AGGREGATE_COMPACT_TO_CARDINALITY);
+                }
+            }
+        }
+
+        if (hasPercentile) {
+            // Now, patch up any MEDIAN/PERCENTILE_X on the coordinating node.
+            List<ExpressionType> coordAggTypes = coordNode.getAggregateTypes();
+            for (int i = 0; i < coordAggTypes.size(); ++i) {
+                ExpressionType et = coordAggTypes.get(i);
+                if (et == ExpressionType.AGGREGATE_MEDIAN) {
+                    coordNode.updateAggregate(i, ExpressionType.AGGREGATE_TDIGEST_TO_MEDIAN);
+                } else if (et == ExpressionType.AGGREGATE_PERCENTILE_1) {
+                    coordNode.updateAggregate(i, ExpressionType.AGGREGATE_TDIGEST_TO_PERCENTILE_1);
+                } else if (et == ExpressionType.AGGREGATE_PERCENTILE_5) {
+                    coordNode.updateAggregate(i, ExpressionType.AGGREGATE_TDIGEST_TO_PERCENTILE_5);
+                } else if (et == ExpressionType.AGGREGATE_PERCENTILE_25) {
+                    coordNode.updateAggregate(i, ExpressionType.AGGREGATE_TDIGEST_TO_PERCENTILE_25);
+                } else if (et == ExpressionType.AGGREGATE_PERCENTILE_75) {
+                    coordNode.updateAggregate(i, ExpressionType.AGGREGATE_TDIGEST_TO_PERCENTILE_75);
+                } else if (et == ExpressionType.AGGREGATE_PERCENTILE_95) {
+                    coordNode.updateAggregate(i, ExpressionType.AGGREGATE_TDIGEST_TO_PERCENTILE_95);
+                } else if (et == ExpressionType.AGGREGATE_PERCENTILE_99) {
+                    coordNode.updateAggregate(i, ExpressionType.AGGREGATE_TDIGEST_TO_PERCENTILE_99);
                 }
             }
         }

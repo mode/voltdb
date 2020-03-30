@@ -128,6 +128,27 @@ public class SetFunction implements Serializable {
                 // Return "unexpected token" error
                 throw Error.error(ErrorCode.X_42581, Tokens.T_COMPACT_COUNT_DISTINCT);
             // End of VoltDB extension
+            case OpTypes.MEDIAN:
+                // Return "unexpected token" error
+                throw Error.error(ErrorCode.X_42581, Tokens.T_MEDIAN);
+            case OpTypes.PERCENTILE_1:
+                // Return "unexpected token" error
+                throw Error.error(ErrorCode.X_42581, Tokens.T_PERCENTILE_1);
+            case OpTypes.PERCENTILE_5:
+                // Return "unexpected token" error
+                throw Error.error(ErrorCode.X_42581, Tokens.T_PERCENTILE_5);
+            case OpTypes.PERCENTILE_25:
+                // Return "unexpected token" error
+                throw Error.error(ErrorCode.X_42581, Tokens.T_PERCENTILE_25);
+            case OpTypes.PERCENTILE_75:
+                // Return "unexpected token" error
+                throw Error.error(ErrorCode.X_42581, Tokens.T_PERCENTILE_75);
+            case OpTypes.PERCENTILE_95:
+                // Return "unexpected token" error
+                throw Error.error(ErrorCode.X_42581, Tokens.T_PERCENTILE_95);
+            case OpTypes.PERCENTILE_99:
+                // Return "unexpected token" error
+                throw Error.error(ErrorCode.X_42581, Tokens.T_PERCENTILE_99);
             case OpTypes.AVG :
             case OpTypes.SUM : {
                 switch (dataType) {
@@ -256,6 +277,27 @@ public class SetFunction implements Serializable {
             throw Error.error(ErrorCode.X_42581, Tokens.T_COMPACT_COUNT_DISTINCT);
         }
         // End of VoltDB extension
+        if (setType == OpTypes.MEDIAN) {
+            throw Error.error(ErrorCode.X_42581, Tokens.T_MEDIAN);
+        }
+        if (setType == OpTypes.PERCENTILE_1) {
+            throw Error.error(ErrorCode.X_42581, Tokens.T_PERCENTILE_1);
+        }
+        if (setType == OpTypes.PERCENTILE_5) {
+            throw Error.error(ErrorCode.X_42581, Tokens.T_PERCENTILE_5);
+        }
+        if (setType == OpTypes.PERCENTILE_25) {
+            throw Error.error(ErrorCode.X_42581, Tokens.T_PERCENTILE_25);
+        }
+        if (setType == OpTypes.PERCENTILE_75) {
+            throw Error.error(ErrorCode.X_42581, Tokens.T_PERCENTILE_75);
+        }
+        if (setType == OpTypes.PERCENTILE_95) {
+            throw Error.error(ErrorCode.X_42581, Tokens.T_PERCENTILE_95);
+        }
+        if (setType == OpTypes.PERCENTILE_99) {
+            throw Error.error(ErrorCode.X_42581, Tokens.T_PERCENTILE_99);
+        }
         if (count == 0) {
             return null;
         }
@@ -498,6 +540,14 @@ public class SetFunction implements Serializable {
             case OpTypes.COMPACT_COUNT_DISTINCT :
                 return Type.SQL_BIGINT;
             // End of VoltDB extension for APPROX_COUNT_DISTINCT
+            case OpTypes.MEDIAN :
+            case OpTypes.PERCENTILE_1 :
+            case OpTypes.PERCENTILE_5 :
+            case OpTypes.PERCENTILE_25 :
+            case OpTypes.PERCENTILE_75 :
+            case OpTypes.PERCENTILE_95 :
+            case OpTypes.PERCENTILE_99 :
+                return Type.SQL_DOUBLE;
             default :
                 throw Error.runtimeError(ErrorCode.U_S0500, "SetFunction");
         }

@@ -1705,6 +1705,13 @@ public class ParserDQL extends ParserBase {
             case OpTypes.APPROX_COUNT_DISTINCT :
             case OpTypes.COMPACT_COUNT_DISTINCT :
             // End of VoltDB extension
+            case OpTypes.MEDIAN :
+            case OpTypes.PERCENTILE_1 :
+            case OpTypes.PERCENTILE_5 :
+            case OpTypes.PERCENTILE_25 :
+            case OpTypes.PERCENTILE_75 :
+            case OpTypes.PERCENTILE_95 :
+            case OpTypes.PERCENTILE_99 :
                 if (all || distinct) {
                     throw Error.error(ErrorCode.X_42582, all ? Tokens.T_ALL
                                                              : Tokens
@@ -2128,6 +2135,13 @@ public class ParserDQL extends ParserBase {
             case Tokens.COUNT :
             case Tokens.APPROX_COUNT_DISTINCT :
             case Tokens.COMPACT_COUNT_DISTINCT :
+            case Tokens.MEDIAN :
+            case Tokens.PERCENTILE_1 :
+            case Tokens.PERCENTILE_5 :
+            case Tokens.PERCENTILE_25 :
+            case Tokens.PERCENTILE_75 :
+            case Tokens.PERCENTILE_95 :
+            case Tokens.PERCENTILE_99 :
             case Tokens.MAX :
             case Tokens.MIN :
             case Tokens.SUM :
