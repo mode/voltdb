@@ -53,6 +53,9 @@
 #include "roaring/roaring.c"
 #include "roaring/roaring.hh" // for COMPACT_COUNT_DISTINCT
 
+#include <cereal/archives/binary.hpp> // for PERCENTILE
+#include <cereal/types/vector.hpp>    // for PERCENTILE
+
 namespace voltdb {
 /*
  * Type of the hash set used to check for column aggregate distinctness
@@ -564,45 +567,116 @@ public:
 
 /// Single partition aggregate
 class PercentileAgg : public Agg {
+protected:
     double m_percentile;
+    std::vector<double> m_values;
 
-    public:
-        PercentileAgg(double percentile) : m_percentile(percentile)
-        {
-        }
+    // Utility function to get the given NValue as a double. There's a bunch of
+    // clean, handy looking methods in NValue, but they're all private.
+    double doubleValue(const NValue& value) {
+        // Cast the value as a double first, because peekDouble() will only
+        // give you a value if the NValue is of type VALUE_TYPE_DOUBLE.
+        return ValuePeeker::peekDouble(value.castAs(VALUE_TYPE_DOUBLE));
+    }
 
-        virtual void advance(const NValue& val)
-        {
-            // TODO: do the thing
-        }
-
-        virtual NValue finalize(ValueType type)
-        {
-            // TODO: do the thing
-            return ValueFactory::getDoubleValue(m_percentile);
-        }
-
-        virtual void resetAgg()
-        {
-            Agg::resetAgg();
-        }
-};
-
-/// Push-down (multi partition) aggregate
-class ValuesToTDigestAgg : public Agg {
 public:
+    PercentileAgg(double percentile) : m_percentile(percentile)
+    {
+        // Do some basic checking to ensure that the percentile given is in
+        // a valid range (0% to 100% exclusive).
+        assert (percentile > 0.0);
+        assert (percentile < 1.0);
+    }
+
     virtual void advance(const NValue& val)
     {
-        // TODO: do the thing
+        // We only handle numeric types.
+        assert(ValuePeeker::peekValueType(val) == VALUE_TYPE_TINYINT
+                || ValuePeeker::peekValueType(val) != VALUE_TYPE_SMALLINT
+                || ValuePeeker::peekValueType(val) != VALUE_TYPE_INTEGER
+                || ValuePeeker::peekValueType(val) != VALUE_TYPE_BIGINT
+                || ValuePeeker::peekValueType(val) != VALUE_TYPE_DOUBLE
+                || ValuePeeker::peekValueType(val) != VALUE_TYPE_TIMESTAMP
+                || ValuePeeker::peekValueType(val) != VALUE_TYPE_DECIMAL);
+
+        // We don't track null or nonsensical values.
+        if (!val.isNull() && !val.isNaN()) {
+            m_values.push_back(doubleValue(val));
+        }
     }
 
     virtual NValue finalize(ValueType type)
     {
-        // TODO: do the thing
+        // If we didn't see any values, the percentile is null.
+        if (m_values.empty()) {
+            return ValueFactory::getNullValue();
+        }
+
+        // Sort the values before we index into the list.
+        std::sort(m_values.begin(), m_values.end());
+
+        // Figure out the rank of the value pertaining to the Nth percentile.
+        // This implements the "Second variant" of the linear interpolation models
+        // described in the following Wikipedia article:
+        // https://web.archive.org/web/20200223144405/https://en.wikipedia.org/wiki/Percentile
+        // rank = (percentile * (sample count - 1)) + 1
+        double rank = (m_percentile * (m_values.size() - 1)) + 1;
+
+        // The rank potentially has both an integral and a fractional rank.
+        // Break it into those component pieces via modf.
+        double integralRank;
+        double fractionalRank = modf(rank, &integralRank);
+
+        // The integral rank is 1-based, but our vector of values is 0-based. Fetch the
+        // value at the integral rank position (the "start") and the value just past
+        // that position (the "end"). Mix in some std::min and std::max to ensure we
+        // don't fall off either end of the vector into undefined space.
+        double start = m_values.at(std::max(0, (int) integralRank - 1));
+        double end = m_values.at(std::min((int) integralRank, (int) m_values.size() - 1));
+
+        // The interpolated result uses the following formula:
+        // result = start + (fractional rank * (end - start))
+        return ValueFactory::getDoubleValue(start + (fractionalRank * (end - start)));
+    }
+
+    virtual void resetAgg()
+    {
+        Agg::resetAgg();
+        m_values.clear();
+    }
+};
+
+/// Push-down (multi partition) aggregate
+class ValuesToTDigestAgg : public PercentileAgg {
+public:
+    // The percentile that we pass down to PercentileAgg doesn't matter for the
+    // push down aggregate. It just needs to be in the bounds that PercentileAgg
+    // accepts.
+    ValuesToTDigestAgg() : PercentileAgg(0.5)
+    {
+    }
+
+    virtual NValue finalize(ValueType type)
+    {
+        // Make sure the caller is asking for a VARBINARY value. This aggregate
+        // doesn't know how to produce anything else.
         assert (type == VALUE_TYPE_VARBINARY);
-        int byteSize = 0;
-        char *serializedBytes = new char[byteSize];
-        return ValueFactory::getTempBinaryValue(serializedBytes, byteSize);
+
+        // Create a buffer to hold the serialized values.
+        std::ostringstream oss;
+        {
+            // Use Cereal (https://uscilab.github.io/cereal/index.html) to serialize
+            // the vector of values to the buffer. This code is inside a block to ensure
+            // that all of the BinaryOutputArchive structures are flushed to the
+            // ostringstream, which it does when it goes out of scope at the end of
+            // this block.
+            cereal::BinaryOutputArchive oarchive(oss);
+            oarchive(m_values);
+        }
+
+        // Convert the buffer to a VARBINARY value for VoltDB.
+        return ValueFactory::getTempBinaryValue(oss.str().c_str(),
+                                                static_cast<int32_t>(oss.str().length()));
     }
 };
 
@@ -615,7 +689,30 @@ public:
 
     virtual void advance(const NValue& val)
     {
-        // TODO: do the thing
+        // Ensure that the incoming value is a VARBINARY (we don't know how to work
+        // with anything else) and that it's not null.
+        assert (ValuePeeker::peekValueType(val) == VALUE_TYPE_VARBINARY);
+        assert (!val.isNull());
+
+        // Fetch a pointer to the underlying data. It's being loaned to us by the
+        // NValue, so we don't need to deallocate it when we're done.
+        int32_t length;
+        const char* buf = ValuePeeker::peekObject_withoutNull(val, &length);
+        assert (length > 0);
+
+        // Wrap the data up in a buffer that Cereal can work with. This is going to
+        // copy the data, which is not strictly necessary. But I'm not sure we have
+        // an alternative. Cereal wants an istringstream and there don't appear to
+        // be any non-copying variants.
+        std::istringstream iss(std::string(buf, length));
+
+        // Use Cereal to deserialize the values into a std::vector.
+        cereal::BinaryInputArchive iarchive(iss);
+        std::vector<double> incomingValues;
+        iarchive(incomingValues);
+
+        // Add the deserialized values to any prior values (from other VoltDB dist nodes).
+        m_values.insert(m_values.end(), incomingValues.begin(), incomingValues.end());
     }
 };
 
@@ -662,33 +759,33 @@ inline Agg* getAggInstance(Pool& memoryPool, ExpressionType agg_type, bool isDis
     case EXPRESSION_TYPE_AGGREGATE_VALUES_TO_TDIGEST:
         return new (memoryPool) ValuesToTDigestAgg();
     case EXPRESSION_TYPE_AGGREGATE_MEDIAN:
-        return new (memoryPool) PercentileAgg(50);
+        return new (memoryPool) PercentileAgg(0.5);
     case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_MEDIAN:
-        return new (memoryPool) TDigestToPercentileAgg(50);
+        return new (memoryPool) TDigestToPercentileAgg(0.5);
     case EXPRESSION_TYPE_AGGREGATE_PERCENTILE_1:
-        return new (memoryPool) PercentileAgg(1);
+        return new (memoryPool) PercentileAgg(0.01);
     case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_PERCENTILE_1:
-        return new (memoryPool) TDigestToPercentileAgg(1);
+        return new (memoryPool) TDigestToPercentileAgg(0.01);
     case EXPRESSION_TYPE_AGGREGATE_PERCENTILE_5:
-        return new (memoryPool) PercentileAgg(5);
+        return new (memoryPool) PercentileAgg(0.05);
     case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_PERCENTILE_5:
-        return new (memoryPool) TDigestToPercentileAgg(5);
+        return new (memoryPool) TDigestToPercentileAgg(0.05);
     case EXPRESSION_TYPE_AGGREGATE_PERCENTILE_25:
-        return new (memoryPool) PercentileAgg(25);
+        return new (memoryPool) PercentileAgg(0.25);
     case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_PERCENTILE_25:
-        return new (memoryPool) TDigestToPercentileAgg(25);
+        return new (memoryPool) TDigestToPercentileAgg(0.25);
     case EXPRESSION_TYPE_AGGREGATE_PERCENTILE_75:
-        return new (memoryPool) PercentileAgg(75);
+        return new (memoryPool) PercentileAgg(0.75);
     case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_PERCENTILE_75:
-        return new (memoryPool) TDigestToPercentileAgg(75);
+        return new (memoryPool) TDigestToPercentileAgg(0.75);
     case EXPRESSION_TYPE_AGGREGATE_PERCENTILE_95:
-        return new (memoryPool) PercentileAgg(95);
+        return new (memoryPool) PercentileAgg(0.95);
     case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_PERCENTILE_95:
-        return new (memoryPool) TDigestToPercentileAgg(95);
+        return new (memoryPool) TDigestToPercentileAgg(0.95);
     case EXPRESSION_TYPE_AGGREGATE_PERCENTILE_99:
-        return new (memoryPool) PercentileAgg(99);
+        return new (memoryPool) PercentileAgg(0.99);
     case EXPRESSION_TYPE_AGGREGATE_TDIGEST_TO_PERCENTILE_99:
-        return new (memoryPool) TDigestToPercentileAgg(99);
+        return new (memoryPool) TDigestToPercentileAgg(0.99);
     default:
         {
             char message[128];

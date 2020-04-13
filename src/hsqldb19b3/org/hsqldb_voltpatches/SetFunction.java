@@ -547,7 +547,24 @@ public class SetFunction implements Serializable {
             case OpTypes.PERCENTILE_75 :
             case OpTypes.PERCENTILE_95 :
             case OpTypes.PERCENTILE_99 :
-                return Type.SQL_DOUBLE;
+                switch (dataType) {
+                case Types.TINYINT :
+                case Types.SQL_SMALLINT :
+                case Types.SQL_INTEGER :
+                case Types.SQL_BIGINT :
+                case Types.SQL_FLOAT :
+                case Types.SQL_DOUBLE :
+                case Types.SQL_REAL :
+                case Types.SQL_DECIMAL :
+                case Types.SQL_TIMESTAMP :
+                    return Type.SQL_DOUBLE;
+                default:
+                    // We only support numeric types for this
+                    // aggregate function.
+                    //
+                    // Incompatible data types in operation
+                    throw Error.error(ErrorCode.X_42565);
+                }
             default :
                 throw Error.runtimeError(ErrorCode.U_S0500, "SetFunction");
         }
