@@ -538,10 +538,10 @@ public:
     {
         assert (type == VALUE_TYPE_VARBINARY);
         uint32_t byteSize =  roaring().getSizeInBytes();
-        char *serializedBytes = new char[byteSize];
+        std::unique_ptr<char[]> serializedBytes(new char[byteSize]);
 
-        roaring().write(serializedBytes);
-        return ValueFactory::getTempBinaryValue(serializedBytes, byteSize);
+        roaring().write(serializedBytes.get());
+        return ValueFactory::getTempBinaryValue(serializedBytes.get(), byteSize);
     }
 };
 
