@@ -199,7 +199,7 @@ public class TestPercentileSuite extends RegressionSuite {
         // Get keys suitable for targeting rows to specific partitions.
         final List<Integer> partitionKeys = getIntegerPartitionKeys();
 
-        // Insert 1,000,000 rows into each of three partitions
+        // Insert 1,000,000 rows into each of the partitions
         for (int partitionKey : partitionKeys) {
             // Give each partition a window of 10M values to work within
             final int idOffset = partitionKey * 10_000_000;
