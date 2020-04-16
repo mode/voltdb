@@ -601,6 +601,11 @@ public:
 
         // We don't track null or nonsensical values.
         if (!val.isNull() && !val.isNaN()) {
+            if (m_values.size() == 1000000) {
+                throw SQLException(SQLException::volt_user_defined_function_error,
+                        "Too many data points for percentile");
+            }
+
             m_values.push_back(doubleValue(val));
         }
     }

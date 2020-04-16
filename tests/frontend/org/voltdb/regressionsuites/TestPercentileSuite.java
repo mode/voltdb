@@ -1,14 +1,17 @@
 package org.voltdb.regressionsuites;
 
 import com.google_voltpatches.common.collect.ImmutableList;
+import com.google_voltpatches.common.primitives.Ints;
 
 import java.lang.Byte;
 import java.lang.Exception;
 import java.lang.Short;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import org.voltdb.BackendTarget;
 import org.voltdb.VoltTable;
@@ -27,6 +30,8 @@ public class TestPercentileSuite extends RegressionSuite {
     private static final List<String> SUPPORTED_COLUMN_NAMES =
             ImmutableList.of("bi", "ii", "si", "ti", "dd", "ff", "ts");
 
+    private static final String SUPER_LARGE_TABLE = "super_large_table";
+
     private static final double DEFAULT_ACCURACY_GOAL = 0.0001 / 100; // 0.0001%
 
     private Client client;
@@ -44,7 +49,7 @@ public class TestPercentileSuite extends RegressionSuite {
     public void testMedianCases() throws Exception {
         for (String tableName : SUPPORTED_COLUMNS_TABLES) {
             // Clear the table before we get started. Just in case.
-            callProcedure("@AdHoc", "DELETE FROM " + tableName);
+            clearTableData(tableName);
 
             // Insert some test data.
             callProcedure(tableName + ".Insert", 1, 1, 1, 1, 1, 1, 1, 1);
@@ -78,7 +83,7 @@ public class TestPercentileSuite extends RegressionSuite {
         // supported column types, and all percentile methods.
         for (String tableName : SUPPORTED_COLUMNS_TABLES) {
             // Clear the table before we get started. Just in case.
-            callProcedure("@AdHoc", "DELETE FROM " + tableName);
+            clearTableData(tableName);
 
             // Insert a row with all null values (excepting the primary key)
             callProcedure(tableName + ".Insert", 1, null, null, null, null, null, null, null);
@@ -106,7 +111,7 @@ public class TestPercentileSuite extends RegressionSuite {
         // supported column types, and all percentile methods.
         for (String tableName : SUPPORTED_COLUMNS_TABLES) {
             // Clear the table before we get started. Just in case.
-            callProcedure("@AdHoc", "DELETE FROM " + tableName);
+            clearTableData(tableName);
 
             // Insert a row with all null values (excepting the primary key)
             callProcedure(tableName + ".Insert", 1, null, null, null, null, null, null, null);
@@ -138,7 +143,7 @@ public class TestPercentileSuite extends RegressionSuite {
         // supported column types, and all percentile methods.
         for (String tableName : SUPPORTED_COLUMNS_TABLES) {
             // Clear the table before we get started. Just in case.
-            callProcedure("@AdHoc", "DELETE FROM " + tableName);
+            clearTableData(tableName);
 
             for (String columnName : SUPPORTED_COLUMN_NAMES) {
                 for (PercentileMethod percentileMethod : PercentileMethod.values()) {
@@ -158,12 +163,12 @@ public class TestPercentileSuite extends RegressionSuite {
         }
     }
 
-    public void testAsTableAgg() throws Exception {
+    public void test100SequentialIntegers() throws Exception {
         // Test all permutations of table types (partitioned and replicated), all
         // supported column types, and all percentile methods.
         for (String tableName : SUPPORTED_COLUMNS_TABLES) {
             // Clear the table before we get started. Just in case.
-            callProcedure("@AdHoc", "DELETE FROM " + tableName);
+            clearTableData(tableName);
 
             // Insert 101 rows with incrementing values
             for (int i = 0; i <= 100; i++) {
@@ -188,24 +193,38 @@ public class TestPercentileSuite extends RegressionSuite {
     }
 
     public void testLargeTable() throws Exception {
-        // Test all permutations of table types (partitioned and replicated)
-        for (String tableName : SUPPORTED_COLUMNS_TABLES) {
-            // Clear the table before we get started. Just in case.
-            callProcedure("@AdHoc", "DELETE FROM " + tableName);
+        // Clear the table before we get started. Just in case.
+        clearTableData(SUPER_LARGE_TABLE);
 
-            VoltBulkLoader loader = client.getNewBulkLoader(tableName, 10_000, null);
+        // Get keys suitable for targeting rows to specific partitions.
+        final List<Integer> partitionKeys = getIntegerPartitionKeys();
 
-            // Insert 1,000,000 rows with incrementing values
-            for (int i = 0; i <= 1_000_000; i++) {
-                loader.insertRow(i, i, i, i, i % Short.MAX_VALUE, i % Byte.MAX_VALUE, i, i, i);
-            }
-
-            loader.drain();
-            loader.close();
-
-            // We just want to know that the query will succeed with such a large dataset
-            callProcedure("@AdHoc", "select median(bi) from " + tableName);
+        // Insert 1,000,000 rows into each of three partitions
+        for (int partitionKey : partitionKeys) {
+            // Give each partition a window of 10M values to work within
+            final int idOffset = partitionKey * 10_000_000;
+            addData(SUPER_LARGE_TABLE, 1_000_000, (i) -> {
+                return new Object[]{
+                        idOffset + i, // id integer
+                        partitionKey, // partition integer
+                        3.14          // value decimal
+                };
+            });
         }
+
+        // Ensure that the query will succeed with 1M row partitions
+        callProcedure("@AdHoc", "select median(decimal_value) as p50 from " + SUPER_LARGE_TABLE);
+
+        // Add one more row to one partition.
+        addData(SUPER_LARGE_TABLE, 1, (i) -> {
+            final int idOffset = partitionKeys.get(0) * 10_000_000;
+            return new Object[]{idOffset + 1_000_001, partitionKeys.get(0), 3.14};
+        });
+
+        // Ensure that the query will abort with at least one 1M + 1 row partitions
+        verifyStmtFails(client,
+                "select median(decimal_value) as p50 from " + SUPER_LARGE_TABLE,
+                "Too many data points for percentile");
     }
 
     static public junit.framework.Test suite() {
@@ -242,7 +261,13 @@ public class TestPercentileSuite extends RegressionSuite {
                 "vc_inline varchar(4), " +
                 "gg geography," +
                 "gp geography_point," +
-                ");";
+                "); " +
+                "CREATE TABLE " + SUPER_LARGE_TABLE + " ( " +
+                "id integer not null, " +
+                "partition integer not null, " +
+                "decimal_value decimal, " +
+                "primary key (id, partition)); " +
+                "partition table " + SUPER_LARGE_TABLE + " on column partition;";
         try {
             project.addLiteralSchema(literalSchema);
         }
@@ -262,6 +287,39 @@ public class TestPercentileSuite extends RegressionSuite {
         builder.addServerConfig(config);
 
         return builder;
+    }
+
+    private List<Integer> getIntegerPartitionKeys() throws Exception {
+        final VoltTable results = callProcedure("@GetPartitionKeys", "integer").getResults()[0];
+
+        final List<Integer> partitionKeys = new ArrayList<>();
+        while (results.advanceRow()) {
+            partitionKeys.add((int) results.getLong("PARTITION_KEY"));
+        }
+
+        return partitionKeys;
+    }
+
+    private void clearTableData(String tableName) throws Exception {
+        callProcedure("@AdHoc", "DELETE FROM " + tableName);
+    }
+
+    private void addData(String tableName, int rowCount, Function<Integer, Object[]> rowGenerator) throws Exception {
+        // Create a bulk loader. This is a lot faster than using the TABLE_NAME.Insert
+        // procedure row-by-row.
+        final VoltBulkLoader loader = client.getNewBulkLoader(tableName, 10_000, (rowHandle, fieldList, response) -> {
+            assertEquals(String.format("Failed to insert row (%s) [%s]: %s", rowHandle, response.getStatusString(), Arrays.toString(fieldList)),
+                    ClientResponse.SUCCESS, response.getStatus());
+        });
+
+        try {
+            for (int i = 0; i < rowCount; i++) {
+                loader.insertRow(i, rowGenerator.apply(i));
+            }
+            loader.drain();
+        } finally {
+            loader.close();
+        }
     }
 
     private ClientResponse callProcedure(String procedure, Object... values) throws Exception {
