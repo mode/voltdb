@@ -8,12 +8,12 @@ workflows:
           context: Shared Secrets
           filters:
             branches:
-              ignore: mode-release-8.x
+              ignore: /mode-release-.*/
       - publish-docker-image:
           context: Shared Secrets
           filters:
             branches:
-              only: mode-release-8.x
+              only: /mode-release-.*/
 
 
 
