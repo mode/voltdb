@@ -28,7 +28,7 @@ jobs:
       - run: apt-get install -y openjdk-8-jdk-headless ant build-essential cmake python git
       - checkout
       - run: ant clean
-      - run: ant dist
+      - run: ant -Djmemcheck=NO_MEMCHECK dist
       - run: cp obj/release/voltdb-community-*.tar.gz obj/release/mode-voltdb-community.tar.gz
       - store_artifacts:
           path: obj/release/mode-voltdb-community.tar.gz
