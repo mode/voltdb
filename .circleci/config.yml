@@ -20,7 +20,7 @@ workflows:
 jobs:
 
   dist:
-    resource_class: 2xlarge
+    resource_class: xlarge
     docker:
       - image: ubuntu:16.04
     steps:
