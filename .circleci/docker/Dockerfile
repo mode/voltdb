@@ -15,7 +15,7 @@ WORKDIR /opt/voltdb
 COPY . .
 
 RUN ant clean
-RUN ant dist | ts '[%Y-%m-%d %H:%M:%S]'
+RUN ant -Djmemcheck=NO_MEMCHECK dist | ts '[%Y-%m-%d %H:%M:%S]'
 RUN cp obj/release/voltdb-community-*.tar.gz obj/release/voltdb-community.tar.gz
 
 

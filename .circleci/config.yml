@@ -28,7 +28,7 @@ jobs:
       - run: apt-get install -y openjdk-8-jdk-headless ant build-essential cmake python git
       - checkout
       - run: ant clean
-      - run: ant dist
+      - run: ant -Djmemcheck=NO_MEMCHECK dist
       - run: cp obj/release/voltdb-community-*.tar.gz obj/release/mode-voltdb-community.tar.gz
       - store_artifacts:
           path: obj/release/mode-voltdb-community.tar.gz
@@ -98,7 +98,7 @@ commands:
             apt-key fingerprint 0EBFCD88
             add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
             apt-get update
-            apt-get install docker-ce-cli
+            apt-get install -y docker-ce-cli
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
