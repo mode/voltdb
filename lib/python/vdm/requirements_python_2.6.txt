@@ -32,6 +32,6 @@ Flask-Inputs==0.2.0
 WTForms== 2.0.2
 jsonschema==2.5.1
 flask-cors==2.1.2
-xmltodict==0.4.1
+xmltodict==0.15.0
 repoze.lru==0.6
 Flask-Logging==0.1.3
